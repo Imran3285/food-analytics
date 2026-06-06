@@ -219,9 +219,9 @@ jupyter notebook food-delivery-operations-customer-analytic-eda.ipynb
 
 ## Author
 
-**[Your Name]**  
+**Muhammad Imran**  
 Data Analyst / Data Scientist  
-[LinkedIn](https://linkedin.com/in/yourprofile) · [Kaggle](https://kaggle.com/yourprofile) · [GitHub](https://github.com/yourusername)
+[LinkedIn](https://www.linkedin.com/in/imran00286/) · [Kaggle](https://www.kaggle.com/imran3285) · [GitHub](https://github.com/Imran3285)
 
 ---
 
