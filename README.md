@@ -174,6 +174,32 @@ food-delivery-operations-customer-analytic-eda.ipynb
 
 ---
 
+## Project Structure
+
+```
+food-analytics/
+│
+├── images/
+│   ├── correlation.png
+│   ├── delivery_physics.png
+│   ├── economics.png
+│   ├── risk.png
+│   ├── segmentation.png
+│   ├── partner.png
+│   ├── temporal.png
+│   ├── univariate.png
+│   ├── ratings.png
+│   ├── top_corr.png
+│   └── economics2.png
+│
+├── food-delivery-operations-customer-analytic-eda.ipynb
+├── README.md
+├── requirements.txt
+└── LICENSE
+```
+
+---
+
 ## How to Run
 
 ### Option A — Kaggle (recommended)
