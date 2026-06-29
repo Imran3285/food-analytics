@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Delivery Operations & Customer Analytics — EDA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0d0f0e;
+    --surface: #151917;
+    --surface-2: #1c201e;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.14);
+    --text: #e8ede9;
+    --text-muted: #7a8c7d;
+    --text-dim: #4a5c4d;
+    --green: #4ade80;
+    --green-dim: #1e3a26;
+    --green-mid: #2d5538;
+    --amber: #f59e0b;
+    --amber-dim: #2a2010;
+    --red: #f87171;
+    --red-dim: #2a1010;
+    --blue: #60a5fa;
+    --blue-dim: #0f1e33;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 72px 0 56px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--green);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+    max-width: 680px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--green);
+  }
+  .hero-desc {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 580px;
+    line-height: 1.75;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    color: var(--text-muted);
+    background: var(--surface);
+    letter-spacing: 0.04em;
+  }
+  .badge.green { border-color: #2d5538; color: var(--green); background: var(--green-dim); }
+  .badge.amber { border-color: #4a3510; color: var(--amber); background: var(--amber-dim); }
+
+  /* ── Section titles ── */
+  .section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 48px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── KPI strip ── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .kpi {
+    background: var(--surface);
+    padding: 20px 18px;
+  }
+  .kpi-num {
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpi-num.green { color: var(--green); }
+  .kpi-num.amber { color: var(--amber); }
+  .kpi-label { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+
+  /* ── Finding cards ── */
+  .findings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .finding::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .finding.green::before { background: var(--green); }
+  .finding.amber::before { background: var(--amber); }
+  .finding.red::before { background: var(--red); }
+  .finding.blue::before { background: var(--blue); }
+  .finding-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .finding.green .finding-tag { color: var(--green); }
+  .finding.amber .finding-tag { color: var(--amber); }
+  .finding.red .finding-tag { color: var(--red); }
+  .finding.blue .finding-tag { color: var(--blue); }
+  .finding h3 { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
+  .finding p { font-size: 13px; color: var(--text-muted); line-height: 1.65; font-weight: 300; }
+
+  /* ── Analysis table ── */
+  .analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+    font-size: 13px;
+  }
+  .analysis-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .analysis-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .analysis-table tr:last-child td { border-bottom: none; }
+  .analysis-table td:first-child {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    width: 48px;
+    padding-right: 6px;
+  }
+  .analysis-table td:nth-child(2) { color: var(--text); font-weight: 400; width: 220px; }
+  .analysis-table tr:hover td { background: var(--surface); }
+
+  /* ── Feature engineering ── */
+  .feature-list { margin-bottom: 40px; }
+  .feature-item {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    align-items: baseline;
+  }
+  .feature-item:first-child { border-top: 1px solid var(--border); }
+  .feature-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+  }
+  .feature-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; }
+
+  /* ── Correlation pairs ── */
+  .corr-list { margin-bottom: 40px; }
+  .corr-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .corr-item:first-child { border-top: 1px solid var(--border); }
+  .corr-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 54px;
+    text-align: right;
+  }
+  .corr-val.pos { color: var(--green); }
+  .corr-val.neg { color: var(--red); }
+  .corr-bar-track {
+    width: 100px;
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 2px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .corr-bar { height: 100%; border-radius: 2px; }
+  .corr-bar.pos { background: var(--green); }
+  .corr-bar.neg { background: var(--red); }
+  .corr-pair { font-size: 13px; color: var(--text-muted); }
+
+  /* ── Business implications ── */
+  .implications { margin-bottom: 40px; }
+  .implication {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .implication:first-child { border-top: 1px solid var(--border); }
+  .impl-finding { font-size: 13px; color: var(--text-muted); padding-right: 24px; }
+  .impl-action { font-size: 13px; color: var(--text); padding-left: 24px; border-left: 1px solid var(--border); }
+  .impl-action::before { content: '→ '; color: var(--green); font-family: var(--mono); }
+
+  /* ── Stack chips ── */
+  .stack-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 13px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-muted);
+  }
+
+  /* ── Gallery ── */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+  .gallery-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .gallery-label {
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  .gallery-thumb {
+    width: 100%;
+    height: 120px;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+
+  /* ── How to run ── */
+  .run-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .run-header {
+    padding: 10px 16px;
+    background: var(--surface-2);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .run-body {
+    padding: 16px;
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+  pre .comment { color: var(--text-dim); }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .footer-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .footer-role { font-size: 12px; color: var(--text-muted); }
+  .footer-links { display: flex; gap: 16px; }
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    transition: color 0.15s;
+  }
+  .footer-links a:hover { color: var(--green); }
+
+  /* ── Project structure ── */
+  .tree {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 40px;
+  }
+  .tree .dir { color: var(--text); }
+  .tree .file { color: var(--text-muted); }
+  .tree .note { color: var(--text-dim); }
+
+  @media (max-width: 600px) {
+    .implication { grid-template-columns: 1fr; }
+    .impl-action { border-left: none; padding-left: 0; padding-top: 8px; border-top: 1px solid var(--border); }
+    .feature-item { grid-template-columns: 1fr; gap: 4px; }
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-eyebrow">Exploratory Data Analysis</div>
+    <h1>Food Delivery <em>Operations</em><br>&amp; Customer Analytics</h1>
+    <p class="hero-desc">
+      A full-spectrum EDA of 15,000 food delivery orders across 3 city tiers — uncovering the operational, economic, and behavioural dynamics that define modern food delivery platforms.
+    </p>
+    <div class="badge-row">
+      <span class="badge green">Python</span>
+      <span class="badge green">pandas · numpy · scipy</span>
+      <span class="badge green">matplotlib · seaborn</span>
+      <span class="badge amber">14 analysis sections</span>
+      <span class="badge amber">8 engineered features</span>
+      <span class="badge">Kaggle dataset</span>
+    </div>
+  </header>
+
+  <!-- Dataset snapshot -->
+  <div class="section-title">Dataset</div>
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-num green">15,000</div><div class="kpi-label">orders</div></div>
+    <div class="kpi"><div class="kpi-num">30</div><div class="kpi-label">features per order</div></div>
+    <div class="kpi"><div class="kpi-num">3</div><div class="kpi-label">city tiers</div></div>
+    <div class="kpi"><div class="kpi-num">24h</div><div class="kpi-label">temporal coverage</div></div>
+    <div class="kpi"><div class="kpi-num amber">99%</div><div class="kpi-label">data completeness</div></div>
+    <div class="kpi"><div class="kpi-num green">8</div><div class="kpi-label">engineered features</div></div>
+  </div>
+
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:40px;line-height:1.7">
+    Source: <strong style="color:var(--text);font-weight:400">Food Delivery Operations &amp; Customer Analytics</strong> by deepeshkansotia on Kaggle.
+    Key columns include order timestamps, customer demographics and loyalty scores, delivery distance and time metrics, weather and traffic conditions, order financials (value, fee, discount, tip), and delivery partner experience — giving end-to-end coverage of the delivery funnel.
+  </p>
+
+  <!-- Key findings -->
+  <div class="section-title">Key findings</div>
+  <div class="findings-grid">
+    <div class="finding green">
+      <div class="finding-tag">Delivery physics</div>
+      <h3>Distance is the dominant ETA driver (r = 0.86)</h3>
+      <p>Distance–time correlation of 0.86 is the strongest signal in the dataset. Every additional kilometre adds ~2.5 min to delivery time. Weather adds a further 12–15 min under severe conditions.</p>
+    </div>
+    <div class="finding blue">
+      <div class="finding-tag">Partner performance</div>
+      <h3>53% efficiency uplift over a partner career</h3>
+      <p>Efficiency grows from 46.7 at year 1 to 71.6 at year 15 — a consistent +1.8 pts/year experience curve. Partner retention is a strategic lever that routing optimisation alone cannot replicate.</p>
+    </div>
+    <div class="finding amber">
+      <div class="finding-tag">Economics</div>
+      <h3>Premium customers pay more, receive identical SLAs</h3>
+      <p>Premium mean order value ≈ ₹124 vs standard ₹110 (+13%), yet delivery time and delay rates are indistinguishable between segments — an unmonetised service-level opportunity.</p>
+    </div>
+    <div class="finding amber">
+      <div class="finding-tag">Loyalty programme</div>
+      <h3>Bronze to Diamond spend is flat at ₹113–114</h3>
+      <p>Order value shows no differentiation across all five loyalty tiers. The programme creates zero spend incentive — a structural design failure requiring fundamental redesign.</p>
+    </div>
+    <div class="finding red">
+      <div class="finding-tag">Operational risk</div>
+      <h3>27% of orders impacted by operational events</h3>
+      <p>Of 15,000 total orders: 2,003 cancelled (13.4%), 1,420 delayed (9.5%), 618 refunded (4.1%). Only 10,959 orders are fully clean. Severe weather spikes delay rates to 10.4%.</p>
+    </div>
+    <div class="finding red">
+      <div class="finding-tag">Rating quality</div>
+      <h3>Ratings locked at 4.0 — systemic inflation</h3>
+      <p>Customer ratings cluster at 4.0 across all segments, age groups, and loyalty tiers. This is a measurement problem, not a satisfaction signal. The rating UX incentivises generous responses.</p>
+    </div>
+  </div>
+
+  <!-- Analysis sections -->
+  <div class="section-title">Analysis sections</div>
+  <table class="analysis-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Section</th>
+        <th>What it covers</th>
+        <th>Output</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>01</td><td>Library imports &amp; aesthetics</td><td>matplotlib, seaborn, scipy, pandas, numpy · custom diverging colourmap</td><td>—</td></tr>
+      <tr><td>02</td><td>Data loading</td><td>kagglehub · KaggleDatasetAdapter pipeline</td><td>—</td></tr>
+      <tr><td>03</td><td>Data overview</td><td>Schema inspection · null audit · gradient-styled .describe()</td><td>—</td></tr>
+      <tr><td>04</td><td>Cleaning &amp; feature engineering</td><td>Median imputation · 8 derived features</td><td>—</td></tr>
+      <tr><td>05</td><td>Univariate distributions</td><td>Histograms with mean/median overlays for 12 core metrics</td><td>univariate.png</td></tr>
+      <tr><td>06</td><td>Temporal patterns</td><td>Hourly bars · violin plots · day-of-week · dual-axis monthly trend</td><td>temporal.png</td></tr>
+      <tr><td>07</td><td>Delivery physics</td><td>KDE-coloured density scatter · efficiency by city tier · weather boxplots · experience curve · Day×Hour heatmap</td><td>delivery_physics.png</td></tr>
+      <tr><td>08</td><td>Order economics</td><td>Stacked bars by city tier · premium scatter · loyalty KDE · promo grouped bars</td><td>economics.png · economics2.png</td></tr>
+      <tr><td>09</td><td>Ratings observatory</td><td>Hexbin joint plot · overlapping KDE · delay×promo rating heatmap</td><td>ratings.png</td></tr>
+      <tr><td>10</td><td>Operational risk</td><td>Cancellation/delay/refund bars · order funnel waterfall · operational event pie</td><td>risk.png</td></tr>
+      <tr><td>11</td><td>Partner experience</td><td>Area chart efficiency curves · delivery time decline · experience-bucket boxplots</td><td>partner.png</td></tr>
+      <tr><td>12</td><td>Customer segmentation</td><td>Loyalty×spend bars · age-group radar · city-tier violin · premium KDE · risk-by-loyalty · age heatmap</td><td>segmentation.png</td></tr>
+      <tr><td>13</td><td>Correlation galaxy</td><td>Full 18×18 lower-triangle Pearson heatmap · top-10 correlated pairs bar chart</td><td>correlation.png · top_corr.png</td></tr>
+      <tr><td>14</td><td>Key takeaways</td><td>Narrative synthesis of all analytical findings across all domains</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Feature engineering -->
+  <div class="section-title">Feature engineering</div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Eight derived features were created to enable deeper analysis beyond the raw columns:</p>
+  <div class="feature-list">
+    <div class="feature-item"><div class="feature-name">delivery_delay_minutes</div><div class="feature-desc">delivery_time − estimated_delivery_time · quantifies under/over-performance vs ETA</div></div>
+    <div class="feature-item"><div class="feature-name">revenue_per_km</div><div class="feature-desc">final_amount_paid / delivery_distance_km · unit economics normalised by distance</div></div>
+    <div class="feature-item"><div class="feature-name">tip_rate</div><div class="feature-desc">tip_amount / order_value · normalised generosity signal independent of order size</div></div>
+    <div class="feature-item"><div class="feature-name">discount_rate</div><div class="feature-desc">discount_amount / order_value · effective discount depth per order</div></div>
+    <div class="feature-item"><div class="feature-name">age_group</div><div class="feature-desc">Binned: 18–25 · 26–35 · 36–45 · 46–55 · 56–65 · customer lifecycle segmentation</div></div>
+    <div class="feature-item"><div class="feature-name">weather_bucket</div><div class="feature-desc">5-bin cut on weather_severity_score · categorical weather severity for group analysis</div></div>
+    <div class="feature-item"><div class="feature-name">loyalty_tier</div><div class="feature-desc">Bronze / Silver / Gold / Platinum / Diamond · human-readable loyalty segmentation</div></div>
+    <div class="feature-item"><div class="feature-name">exp_bucket</div><div class="feature-desc">1–3 · 4–6 · 7–10 · 11–15 yrs · partner career stage grouping</div></div>
+  </div>
+
+  <!-- Top correlations -->
+  <div class="section-title">Top correlations</div>
+  <div class="corr-list">
+    <div class="corr-item">
+      <span class="corr-val pos">+0.883</span>
+      <div class="corr-bar-track"><div class="corr-bar pos" style="width:100%"></div></div>
+      <span class="corr-pair">final_amount_paid ↔ order_value</span>
+    </div>
+    <div class="corr-item">
+      <span class="corr-val pos">+0.864</span>
+      <div class="corr-bar-track"><div class="corr-bar pos" style="width:97%"></div></div>
+      <span class="corr-pair">delivery_time_minutes ↔ delivery_distance_km</span>
+    </div>
+    <div class="corr-item">
+      <span class="corr-val neg">−0.819</span>
+      <div class="corr-bar-track"><div class="corr-bar neg" style="width:93%"></div></div>
+      <span class="corr-pair">delivery_efficiency_score ↔ delivery_time_minutes</span>
+    </div>
+    <div class="corr-item">
+      <span class="corr-val neg">−0.636</span>
+      <div class="corr-bar-track"><div class="corr-bar neg" style="width:72%"></div></div>
+      <span class="corr-pair">delivery_efficiency_score ↔ delivery_distance_km</span>
+    </div>
+    <div class="corr-item">
+      <span class="corr-val neg">−0.435</span>
+      <div class="corr-bar-track"><div class="corr-bar neg" style="width:49%"></div></div>
+      <span class="corr-pair">delivery_efficiency_score ↔ traffic_level_score</span>
+    </div>
+    <div class="corr-item">
+      <span class="corr-val pos">+0.425</span>
+      <div class="corr-bar-track"><div class="corr-bar pos" style="width:48%"></div></div>
+      <span class="corr-pair">delivery_efficiency_score ↔ delivery_partner_experience_years</span>
+    </div>
+    <div class="corr-item">
+      <span class="corr-val neg">−0.340</span>
+      <div class="corr-bar-track"><div class="corr-bar neg" style="width:38%"></div></div>
+      <span class="corr-pair">final_amount_paid ↔ discount_amount</span>
+    </div>
+    <div class="corr-item">
+      <span class="corr-val neg">−0.336</span>
+      <div class="corr-bar-track"><div class="corr-bar neg" style="width:38%"></div></div>
+      <span class="corr-pair">delivery_efficiency_score ↔ weather_severity_score</span>
+    </div>
+  </div>
+
+  <!-- Visual gallery -->
+  <div class="section-title">Visualisation outputs</div>
+  <div class="gallery-grid">
+    <div class="gallery-item">
+      <div class="gallery-thumb">temporal.png</div>
+      <div class="gallery-label">Temporal patterns</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">delivery_physics.png</div>
+      <div class="gallery-label">Delivery physics</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">economics.png</div>
+      <div class="gallery-label">Order economics</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">economics2.png</div>
+      <div class="gallery-label">Promo &amp; premium</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">risk.png</div>
+      <div class="gallery-label">Operational risk</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">partner.png</div>
+      <div class="gallery-label">Partner performance</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">segmentation.png</div>
+      <div class="gallery-label">Customer segmentation</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">correlation.png</div>
+      <div class="gallery-label">Correlation galaxy</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb">top_corr.png</div>
+      <div class="gallery-label">Top correlations</div>
+    </div>
+  </div>
+
+  <!-- Business implications -->
+  <div class="section-title">Business implications</div>
+  <div class="implications">
+    <div class="implication">
+      <div class="impl-finding">Distance is the #1 delivery time driver</div>
+      <div class="impl-action">Prioritise hyperlocal restaurant onboarding in dense delivery zones. Each kilometre reduction in average distance saves ~2.5 min per order.</div>
+    </div>
+    <div class="implication">
+      <div class="impl-finding">53% efficiency gap between new and experienced partners</div>
+      <div class="impl-action">Invest in partner retention. Build structured mentorship and incentive programmes for high-experience partners — the efficiency curve compounds over time.</div>
+    </div>
+    <div class="implication">
+      <div class="impl-finding">Premium customers receive no faster service</div>
+      <div class="impl-action">Introduce SLA-based priority dispatch for premium tier. Quantify willingness-to-pay for guaranteed ETA to size the revenue opportunity.</div>
+    </div>
+    <div class="implication">
+      <div class="impl-finding">~27% of orders impacted by cancellations, delays, or refunds</div>
+      <div class="impl-action">Build a pre-dispatch risk scoring model using distance, weather, time-of-day, and partner experience as features to flag at-risk orders before dispatch.</div>
+    </div>
+    <div class="implication">
+      <div class="impl-finding">Rating inflation — 4.0 is universal across every segment</div>
+      <div class="impl-action">Redesign rating UX to include multi-dimensional feedback (food quality, packaging, punctuality) with friction on high ratings to reduce inflation bias.</div>
+    </div>
+    <div class="implication">
+      <div class="impl-finding">Loyalty tier spending is completely undifferentiated</div>
+      <div class="impl-action">Redesign loyalty programme with spend-linked thresholds and exclusive perks for Platinum/Diamond. A/B test spend uplift vs control group before full rollout.</div>
+    </div>
+    <div class="implication">
+      <div class="impl-finding">Severe weather spikes delays by 12–15 min</div>
+      <div class="impl-action">Surface weather-adjusted ETA buffers proactively in the customer-facing app before the order is placed, not after the delay occurs.</div>
+    </div>
+  </div>
+
+  <!-- Project structure -->
+  <div class="section-title">Project structure</div>
+  <div class="tree">
+<span class="dir">food-analytics/</span>
+│
+├── <span class="dir">images/</span>
+│   ├── <span class="file">correlation.png</span>
+│   ├── <span class="file">delivery_physics.png</span>
+│   ├── <span class="file">economics.png</span>
+│   ├── <span class="file">economics2.png</span>
+│   ├── <span class="file">partner.png</span>
+│   ├── <span class="file">ratings.png</span>
+│   ├── <span class="file">risk.png</span>
+│   ├── <span class="file">segmentation.png</span>
+│   ├── <span class="file">temporal.png</span>
+│   ├── <span class="file">top_corr.png</span>
+│   └── <span class="file">univariate.png</span>
+│
+├── <span class="file">food-delivery-operations-customer-analytic-eda.ipynb</span>  <span class="note"># Full analysis pipeline</span>
+├── <span class="file">README.html</span>                                               <span class="note"># This file</span>
+└── <span class="file">README.md</span>
+  </div>
+
+  <!-- How to run -->
+  <div class="section-title">Reproducing the analysis</div>
+
+  <div class="run-block">
+    <div class="run-header">Option A — Kaggle (recommended, zero setup)</div>
+    <div class="run-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Open the notebook directly on Kaggle and add the dataset: <code style="font-family:var(--mono);color:var(--green);font-size:12px">deepeshkansotia/food-delivery-operations-and-customer-analytics</code></p>
+    </div>
+  </div>
+
+  <div class="run-block">
+    <div class="run-header">Option B — Local</div>
+    <div class="run-body">
+      <pre><span class="comment"># Clone the repository</span>
+git clone https://github.com/Imran3285/food-analytics.git
+cd food-analytics
+
+<span class="comment"># Install dependencies</span>
+pip install pandas numpy matplotlib seaborn scipy kagglehub
+
+<span class="comment"># Place Kaggle API credentials</span>
+<span class="comment"># ~/.kaggle/kaggle.json (Linux/Mac) or %USERPROFILE%\.kaggle\kaggle.json (Windows)</span>
+
+<span class="comment"># Launch notebook</span>
+jupyter notebook food-delivery-operations-customer-analytic-eda.ipynb</pre>
+    </div>
+  </div>
+
+  <!-- Stack -->
+  <div class="section-title">Stack</div>
+  <div class="stack-row">
+    <span class="chip">Python 3.x</span>
+    <span class="chip">pandas</span>
+    <span class="chip">numpy</span>
+    <span class="chip">scipy.stats</span>
+    <span class="chip">matplotlib</span>
+    <span class="chip">seaborn</span>
+    <span class="chip">kagglehub</span>
+    <span class="chip">LinearSegmentedColormap</span>
+    <span class="chip">Jupyter Notebook</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div>
+      <div class="footer-name">Muhammad Imran</div>
+      <div class="footer-role">Data Analyst · Data Scientist</div>
+    </div>
+    <div class="footer-links">
+      <a href="https://www.linkedin.com/in/imran3285" target="_blank">LinkedIn</a>
+      <a href="https://www.kaggle.com/imran3285" target="_blank">Kaggle</a>
+      <a href="https://github.com/Imran3285" target="_blank">GitHub</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
