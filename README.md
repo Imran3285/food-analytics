@@ -1,6 +1,8 @@
 # 🍜 Food Delivery Operations & Customer Analytics — EDA
 
-A full-spectrum exploratory data analysis of **15,000 food delivery orders** across 3 city tiers, uncovering the operational, economic, and behavioural dynamics that define modern food delivery platforms.
+A full-spectrum exploratory data analysis of **15,000 food delivery orders** across 3 city tiers — uncovering the operational, economic, and behavioural dynamics that define modern food delivery platforms.
+
+> 📊 **[View the Interactive Analytics Report →](food-analytics-report.html)**
 
 ---
 
@@ -56,31 +58,31 @@ This notebook performs a full-spectrum EDA on a food delivery operations dataset
 ### 🚚 Delivery Physics
 - Distance–time correlation = **0.86** — the single strongest predictor of delivery duration in the dataset
 - Each additional kilometre adds approximately **~2.5 minutes** to a delivery
-- Severe weather inflates average delivery time by **12–15 minutes** vs mild conditions
-- Delivery efficiency score shows a strong negative correlation with both distance (r = −0.64) and traffic (r = −0.44)
+- Severe weather inflates average delivery time by **12–15 minutes** vs mild conditions — a non-linear discontinuity at the severe threshold
+- Delivery efficiency score shows strong negative correlations with distance (r = −0.64) and traffic (r = −0.44)
 
 ### 👨‍💼 Partner Performance
 - Efficiency scores grow from **46.7 (Year 1) → 71.6 (Year 15)** — a 53% performance uplift over a career at +1.8 pts/year
 - This experience curve cannot be replicated by routing optimisation alone; **partner retention is a strategic lever**
-- Notably, delivery time remains nearly flat across experience buckets — efficiency captures quality beyond raw speed
+- Delivery time remains nearly flat across experience buckets — efficiency captures route quality and reliability, not just speed
 
 ### 💰 Economics
-- Premium customers place higher-value orders (₹124 avg vs ₹110 standard) but receive **identical delivery times and delay rates** — an unmet SLA differentiation opportunity
-- Promo code usage reduces final payment but does **not** negatively correlate with tip rate — promos attract engaged customers, not cheap ones
-- Loyalty tiers (Bronze → Diamond) show **zero spend differentiation** at ₹113–114 across all tiers, indicating the programme requires fundamental redesign
+- Premium customers average **₹124 vs ₹110** for standard (+13%) but receive identical delivery times and delay rates — an unmet SLA differentiation opportunity
+- Promo code usage does **not** negatively correlate with tip rate — promos attract engaged customers, not cheap ones
+- Loyalty tiers (Bronze → Diamond) show **zero spend differentiation** at ₹113–114 across all tiers — the programme requires fundamental redesign
 
 ### 📊 Operations & Risk
-- The operational funnel loses approximately **27% of orders**: 13.4% to cancellations, 9.5% to delays, 4.1% to refunds — only 73.1% of orders are fully "clean"
-- Delay rates jump to **10.4% under severe weather** vs 8.9–9.5% under all other conditions — a clear discontinuity warranting proactive ETA buffering
-- Cancellation rates are near-identical across all three city tiers (13.2–13.6%)
+- The operational funnel loses **27% of orders**: 13.4% to cancellations, 9.5% to delays, 4.1% to refunds — only 73.1% are fully clean
+- Delay rates jump to **10.4% under severe weather** vs 8.9–9.5% under all other conditions — proactive ETA buffering is warranted
+- Cancellation rates are near-identical across all three city tiers (13.2–13.6%) — the driver is platform-level, not geographic
 
 ### ⏰ Temporal
-- Order volume is relatively uniform across hours of the day with modest peaks; weekdays drive higher volume than weekends
-- Monthly order counts and average order values show independent oscillation patterns
+- Order volume is relatively uniform across hours with modest peaks; weekdays drive higher volume than weekends
+- Monthly order counts and average order values show independent oscillation patterns with no strong co-movement
 
 ### ⭐ Ratings
-- Customer ratings cluster tightly around **4.0 across all segments, age groups, and loyalty tiers** — systemic rating inflation rather than genuine satisfaction signal
-- The rating UX incentivises generous responses regardless of actual experience quality
+- Customer ratings cluster at **4.0 universally** — across all segments, age groups, loyalty tiers, and city tiers
+- This is a measurement artefact, not a satisfaction signal; the rating UX requires redesign to produce usable data
 
 ---
 
@@ -112,11 +114,11 @@ Eight derived features were created to enable deeper analysis beyond the raw col
 | Feature | Formula | Purpose |
 |---|---|---|
 | `delivery_delay_minutes` | delivery_time − estimated_delivery_time | Quantifies under/over-performance vs ETA |
-| `revenue_per_km` | final_amount_paid / delivery_distance_km | Unit economics normalised by distance |
+| `revenue_per_km` | final_amount_paid / delivery_distance_km | Unit economics normalised by the dominant cost driver |
 | `tip_rate` | tip_amount / order_value | Normalised generosity signal independent of order size |
-| `discount_rate` | discount_amount / order_value | Effective discount depth per order |
+| `discount_rate` | discount_amount / order_value | Effective markdown depth per order |
 | `age_group` | Binned: 18–25, 26–35, 36–45, 46–55, 56–65 | Customer lifecycle segmentation |
-| `weather_bucket` | 5-bin cut on weather_severity_score | Categorical severity grouping for analysis |
+| `weather_bucket` | 5-bin cut on weather_severity_score | Reveals the severe-condition discontinuity |
 | `loyalty_tier` | Bronze / Silver / Gold / Platinum / Diamond | Human-readable loyalty segmentation |
 | `exp_bucket` | 1–3, 4–6, 7–10, 11–15 yrs | Partner career stage grouping |
 
@@ -132,11 +134,11 @@ Eight derived features were created to enable deeper analysis beyond the raw col
 | delivery_efficiency_score ↔ delivery_distance_km | **−0.636** | ↓ Moderate negative |
 | delivery_efficiency_score ↔ traffic_level_score | **−0.435** | ↓ Moderate negative |
 | delivery_efficiency_score ↔ partner_experience_years | **+0.425** | ↑ Moderate positive |
+| delivery_time_minutes ↔ preparation_time_minutes | **+0.394** | ↑ Moderate positive |
 | final_amount_paid ↔ discount_amount | **−0.340** | ↓ Moderate negative |
 | delivery_efficiency_score ↔ weather_severity_score | **−0.336** | ↓ Moderate negative |
-| delivery_time_minutes ↔ preparation_time_minutes | **+0.394** | ↑ Moderate positive |
 
-The majority of off-diagonal values in the full 18×18 matrix are near zero — reflecting a clean, well-structured dataset.
+> The majority of off-diagonal values in the full 18×18 matrix are near zero — reflecting a clean, well-structured dataset where causal structure is legible.
 
 ---
 
@@ -144,13 +146,13 @@ The majority of off-diagonal values in the full 18×18 matrix are near zero — 
 
 | Finding | Recommended Action |
 |---|---|
-| Distance is the #1 delivery time driver | Prioritise hyperlocal restaurant onboarding in dense delivery zones — each km reduction saves ~2.5 min per order |
-| 53% efficiency gap between new and experienced partners | Invest in partner retention; build mentorship and incentive programmes — the efficiency curve compounds over a career |
-| Premium customers receive identical SLAs to standard | Introduce SLA-based priority dispatch for premium tier; quantify willingness-to-pay for guaranteed ETA |
-| ~27% of orders impacted by operational events | Build a pre-dispatch risk scoring model using distance, weather, time-of-day, and partner experience as features |
-| Rating inflation around 4.0 universally | Redesign rating UX with multi-dimensional feedback (food quality, packaging, punctuality) and friction on high ratings |
-| Loyalty tier spending completely undifferentiated | Redesign programme with spend-linked thresholds and exclusive Platinum/Diamond perks; A/B test before full rollout |
-| Severe weather spikes delays by 12–15 min | Surface proactive weather-adjusted ETA buffers in the customer app before the order is placed |
+| Distance is the #1 delivery time driver | Prioritise hyperlocal restaurant onboarding in dense zones — each km reduction saves ~2.5 min per order |
+| 53% efficiency gap between new and experienced partners | Invest in retention; build mentorship and milestone incentive programmes — the curve compounds over a career |
+| Premium customers receive identical SLAs to standard | Introduce SLA-based priority dispatch; quantify willingness-to-pay for guaranteed ETA window |
+| ~27% of orders impacted by operational events | Build a pre-dispatch risk scoring model using distance, weather, time-of-day, and partner experience |
+| Rating inflation at 4.0 universally | Redesign rating UX with multi-dimensional prompts and friction on 5-star to produce usable signal |
+| Loyalty tier spending completely undifferentiated | Redesign with spend-linked thresholds and exclusive Platinum/Diamond perks; A/B test before rollout |
+| Severe weather spikes delays non-linearly | Surface proactive weather ETA buffers in the customer app at order placement, not post-delay |
 
 ---
 
@@ -172,8 +174,8 @@ food-analytics/
 │   ├── top_corr.png
 │   └── univariate.png
 │
-├── food-delivery-operations-customer-analytic-eda.ipynb
-├── README.html
+├── food-delivery-operations-customer-analytic-eda.ipynb   ← Full analysis pipeline
+├── food-analytics-report.html                             ← Interactive executive report
 └── README.md
 ```
 
@@ -227,3 +229,6 @@ jupyter notebook food-delivery-operations-customer-analytic-eda.ipynb
 [LinkedIn](https://www.linkedin.com/in/imran3285) · [Kaggle](https://www.kaggle.com/imran3285) · [GitHub](https://github.com/Imran3285)
 
 *Dataset credit: deepeshkansotia on Kaggle*
+Done
+
+You are out of free messages until 1:50 AM
